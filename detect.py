@@ -9,6 +9,7 @@ import sys
 import time
 import datetime
 import argparse
+import cv2
 
 from PIL import Image
 
@@ -75,7 +76,9 @@ if __name__ == "__main__":
         # Get detections
         with torch.no_grad():
             detections = model(input_imgs)
+            print(detections.size())
             detections = non_max_suppression(detections, opt.conf_thres, opt.nms_thres)
+            print(detections)
 
         # Log progress
         current_time = time.time()
@@ -120,6 +123,17 @@ if __name__ == "__main__":
                 color = bbox_colors[int(np.where(unique_labels == int(cls_pred))[0])]
                 # Create a Rectangle patch
                 bbox = patches.Rectangle((x1, y1), box_w, box_h, linewidth=2, edgecolor=color, facecolor="none")
+                
+              
+                color = bbox_colors[int(np.where(unique_labels == int(cls_pred))[0])]
+                img = cv2.rectangle(img, (x1, y1), (x2, y2), (0,0,255), 1)
+                img = cv2.circle(img,(0,100), 20, (0,0,255), -1)
+                
+                cv2.putText(img, classes[int(cls_pred)], (x1, y1), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 1)
+                cv2.imshow("frame", img)
+                key = cv2.waitKey(0)
+                cv2.destroyAllWindows()
+            
                 # Add the bbox to the plot
                 ax.add_patch(bbox)
                 # Add label
@@ -136,6 +150,6 @@ if __name__ == "__main__":
         plt.axis("off")
         plt.gca().xaxis.set_major_locator(NullLocator())
         plt.gca().yaxis.set_major_locator(NullLocator())
-        filename = path.split("/")[-1].split(".")[0]
-        plt.savefig(f"output/{filename}.png", bbox_inches="tight", pad_inches=0.0)
+        plt.savefig("output/%d.png" % (img_i), bbox_inches="tight", pad_inches=0.0)
+        plt.show()
         plt.close()
