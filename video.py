@@ -10,6 +10,7 @@ import sys
 import time
 import datetime
 import argparse
+import cv2
 
 from PIL import Image
 
@@ -76,6 +77,7 @@ if __name__ == "__main__":
     while cap.isOpened():
         
         ret, frame = cap.read()
+#        print(frame.shape[:,:])
         print(ret)
         
         if ret:
@@ -93,7 +95,7 @@ if __name__ == "__main__":
             if detections[0] is not None:
 #                print(detections)
 #                Rescale boxes to original image
-                detections = rescale_boxes(detections[0], opt.img_size, dim)
+                detections = rescale_boxes(detections[0], opt.img_size, (240, 320))
                 unique_labels = detections[:, -1].cpu().unique()
                 n_cls_preds = len(unique_labels)
                 bbox_colors = random.sample(colors, n_cls_preds)
@@ -104,9 +106,8 @@ if __name__ == "__main__":
                     print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
 #                    print(x1, y1, x2, y2)
                     color = bbox_colors[int(np.where(unique_labels == int(cls_pred))[0])]
-                    orig_im = cv2.rectangle(frame, (x1+40, y1-30), (x2+40, y2-30), (0,0,255), 1)
-                    orig_im = cv2.circle(frame,(0,100), 20, (0,0,255), -1)
-                    cv2.putText(frame, classes[int(cls_pred)], (x1+40, y1-30), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 1)
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0,0,255), 1)            
+                    cv2.putText(frame, classes[int(cls_pred)], (x1, y1), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 1)
                 
                 frames += 1
                 print("FPS of the video is {:5.2f}".format( frames / (time.time() - start)))
@@ -119,7 +120,7 @@ if __name__ == "__main__":
             else:
                 frames += 1
                 print("FPS of the video is {:5.2f}".format( frames / (time.time() - start)))
-                cv2.imshow("frame", orig_im)
+                cv2.imshow("frame", frame)
                 key = cv2.waitKey(1)
                 if key & 0xFF == ord('q'):
                     break
