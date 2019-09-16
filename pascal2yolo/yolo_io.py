@@ -34,6 +34,7 @@ class YOLOWriter:
         xmax = box['xmax']
         ymin = box['ymin']
         ymax = box['ymax']
+        
 
         xcen = float((xmin + xmax)) / 2 / self.imgSize[1]
         ycen = float((ymin + ymax)) / 2 / self.imgSize[0]

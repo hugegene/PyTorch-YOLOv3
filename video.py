@@ -26,7 +26,7 @@ from matplotlib.ticker import NullLocator
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--video_file", type=str, default="data/video/123.mp4", help="path to dataset")
+    parser.add_argument("--video_file", type=str, default="data/video/rt.mp4", help="path to dataset")
     parser.add_argument("--model_def", type=str, default="config/yolov3.cfg", help="path to model definition file")
     parser.add_argument("--weights_path", type=str, default="weights/yolov3.weights", help="path to weights file")
     parser.add_argument("--class_path", type=str, default="data/coco.names", help="path to class label file")
@@ -91,6 +91,7 @@ if __name__ == "__main__":
             with torch.no_grad():
                 detections = model(img)
                 detections = non_max_suppression(detections, opt.conf_thres, opt.nms_thres)
+            
 
             if detections[0] is not None:
 #                print(detections)
@@ -125,15 +126,4 @@ if __name__ == "__main__":
                 if key & 0xFF == ord('q'):
                     break
                 continue
-            
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    cv2.destroyAllWindows()

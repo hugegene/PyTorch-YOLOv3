@@ -1,1 +1,2 @@
-data/custom/images/train.jpg
+data/custom/images/image_label20190523-093653.jpg
+data/custom/images/image_label20190523-093659.jpg

@@ -71,6 +71,8 @@ def create_modules(module_defs):
             anchors = [int(x) for x in module_def["anchors"].split(",")]
             anchors = [(anchors[i], anchors[i + 1]) for i in range(0, len(anchors), 2)]
             anchors = [anchors[i] for i in anchor_idxs]
+#            print("here")
+#            print(module_def["classes"])
             num_classes = int(module_def["classes"])
             img_size = int(hyperparams["height"])
             # Define detection layer
@@ -125,13 +127,19 @@ class YOLOLayer(nn.Module):
         g = self.grid_size
         FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
         self.stride = self.img_dim / self.grid_size
+#        print(self.stride)
         # Calculate offsets for each grid
         self.grid_x = torch.arange(g).repeat(g, 1).view([1, 1, g, g]).type(FloatTensor)
+#        print(self.grid_x)
         self.grid_y = torch.arange(g).repeat(g, 1).t().view([1, 1, g, g]).type(FloatTensor)
+#        print(self.grid_y)
         self.scaled_anchors = FloatTensor([(a_w / self.stride, a_h / self.stride) for a_w, a_h in self.anchors])
+#        print(self.scaled_anchors)
         self.anchor_w = self.scaled_anchors[:, 0:1].view((1, self.num_anchors, 1, 1))
+#        print(self.anchor_w)
         self.anchor_h = self.scaled_anchors[:, 1:2].view((1, self.num_anchors, 1, 1))
-
+#        print(self.anchor_h)
+        
     def forward(self, x, targets=None, img_dim=None):
 
         # Tensors for cuda support
@@ -148,6 +156,10 @@ class YOLOLayer(nn.Module):
             .permute(0, 1, 3, 4, 2)
             .contiguous()
         )
+#        print("x size:")
+#        print(x.size())
+#        print("-----------in here-----------------------")
+#        print(prediction.size())
 
         # Get outputs
         x = torch.sigmoid(prediction[..., 0])  # Center x
@@ -168,6 +180,7 @@ class YOLOLayer(nn.Module):
         pred_boxes[..., 2] = torch.exp(w.data) * self.anchor_w
         pred_boxes[..., 3] = torch.exp(h.data) * self.anchor_h
 
+
         output = torch.cat(
             (
                 pred_boxes.view(num_samples, -1, 4) * self.stride,
@@ -176,7 +189,7 @@ class YOLOLayer(nn.Module):
             ),
             -1,
         )
-
+            
         if targets is None:
             return output, 0
         else:
@@ -201,12 +214,23 @@ class YOLOLayer(nn.Module):
 
             # Metrics
             cls_acc = 100 * class_mask[obj_mask].mean()
+            print(class_mask.size())
+            print(class_mask[obj_mask])
+            print(class_mask[obj_mask].mean().size())
+            print(cls_acc)
+            
             conf_obj = pred_conf[obj_mask].mean()
             conf_noobj = pred_conf[noobj_mask].mean()
             conf50 = (pred_conf > 0.5).float()
+            print(conf50.size())
+            print(conf50.sum())
             iou50 = (iou_scores > 0.5).float()
+            print(iou50.size())
+            
             iou75 = (iou_scores > 0.75).float()
+            
             detected_mask = conf50 * class_mask * tconf
+            print((iou50 * detected_mask).size())
             precision = torch.sum(iou50 * detected_mask) / (conf50.sum() + 1e-16)
             recall50 = torch.sum(iou50 * detected_mask) / (obj_mask.sum() + 1e-16)
             recall75 = torch.sum(iou75 * detected_mask) / (obj_mask.sum() + 1e-16)

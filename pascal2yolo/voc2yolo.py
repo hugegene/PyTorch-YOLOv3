@@ -6,13 +6,14 @@ from yolo_io import YOLOWriter
 import os.path
 import sys
 
+
 try:
     from PyQt5.QtGui import QImage
 except ImportError:
     from PyQt4.QtGui import QImage
 
 
-imgFolderPath = "C:\\Users\\bdgecyt\\Desktop\\SengKang_Part_1"
+imgFolderPath = "C:\\Users\\bdgecyt\\Desktop\\New Folder With Items"
 #sys.argv[1]
 
 # Search all pascal annotation (xml files) in this folder
@@ -21,15 +22,16 @@ for file in os.listdir(imgFolderPath):
         annotation_no_xml = os.path.splitext(file)[0]
 
         imagePath = imgFolderPath + "/" + annotation_no_xml + ".jpg"
-
+ 
         image = QImage()
         image.load(imagePath)
+
         imageShape = [image.height(), image.width(), 1 if image.isGrayscale() else 3]
         imgFolderName = os.path.basename(imgFolderPath)
         imgFileName = os.path.basename(imagePath)
 
         writer = YOLOWriter(imgFolderName, imgFileName, imageShape, localImgPath=imagePath)
-
+     
         # Read classes.txt
         classListPath = imgFolderPath + "/" + "classes.txt"
         classesFile = open(classListPath, 'r')
